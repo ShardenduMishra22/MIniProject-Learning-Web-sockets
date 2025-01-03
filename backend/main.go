@@ -5,9 +5,23 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	// github.com/gorilla/mux: Used for routing.
+
 	"github.com/gorilla/websocket"
+	// github.com/gorilla/websocket: Provides WebSocket handling capabilities.
 )
 
+
+// websocket.Upgrader configures how WebSocket connections are handled. 
+// Here, it allows connections from all origins (CheckOrigin: true).
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+// When a client connects, handleConnections handles the upgrade to WebSocket 
+// and adds the client to a map of connected clients.
 type Client struct {
 	conn *websocket.Conn
 	send chan []byte
@@ -15,12 +29,6 @@ type Client struct {
 
 var clients = make(map[*Client]bool)
 var broadcast = make(chan []byte)
-
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true // Allow all origins (for development)
-	},
-}
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
